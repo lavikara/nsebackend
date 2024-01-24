@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const env = require("../config/env.js");
 
 exports.authorization = () => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).send({
@@ -10,8 +10,17 @@ exports.authorization = () => {
         message: "you're not authorized",
       });
     }
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, env.config.JWT_SECRET);
-    next();
+    try {
+      const token = authHeader.split(" ")[1];
+      const payload = jwt.verify(token, env.config.JWT_SECRET);
+      req.user = payload;
+      next();
+    }
+    catch (err) {
+      res.status(401).send({
+        status: "error",
+        message: "you're not authorized",
+      });
+    }
   };
 };

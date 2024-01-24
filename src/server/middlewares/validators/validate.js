@@ -7,7 +7,7 @@ module.exports = (schema) => {
       if (result.error) {
         res.status(422).send({
           status: "error",
-          message: "Invalid data",
+          message: result.error.details.map((err) => err.message),
         });
         return;
       }
