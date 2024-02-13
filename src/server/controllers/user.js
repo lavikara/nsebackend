@@ -1,10 +1,12 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const env = require("../config/env.js");
 const usermodel = require("../../db/models/userModel.js");
+const resetPasswordModel = require("../../db/models/reset_password.js");
+const SendEmail = require("../utils/mail.js");
+const sendEmail = require("../utils/mail.js");
 
 exports.add_member = () => {
-  console.log("im here");
   return async (req, res, next) => {
     try {
       req.body.password = await bcrypt.hash(req.body.password, 10);
@@ -152,43 +154,41 @@ exports.delete_member = (id) => {
   }
 }
 
-exports.change_password = (id) => {
+exports.change_password = () => {
   return async (req, res, next) => {
     try {
-      if (req.body.new_password == req.body.old_password) {
+      const resetpassword = await resetPasswordModel.findOne({
+        token: req.body.token,
+      });
+
+      if (!resetpassword) {
         return res.status(400).send({
           status: "error",
-          message: "new password cannot be the same as old password",
+          message: "invalid token",
         });
       }
 
-      var userobj = await usermodel.findById(req.params.id);
-      userobj = userobj.toJSON();
-
-      const user = await usermodel.findOne(
-        { email: userobj.email },
-        "+password"
-      );
-
-      const ispasswordvalid = await bcrypt.compare(
-        req.body.old_password,
-        user.password
-      );
-
-      if (!ispasswordvalid) {
-        return res.status(403).send({
+      if (resetpassword.expires < new Date()) {
+        return res.status(400).send({
           status: "error",
-          message: "invalid password",
+          message: "expired token",
         });
       }
 
-      const newPasswordHash = await bcrypt.hash(req.body.new_password, 10);
+      newpassword = await bcrypt.hash(req.body.password, 10);
 
-      user.password = newPasswordHash;
-      await user.save();
+      const user = await usermodel.findOneAndUpdate(
+        { email: resetpassword.email },
+        { password: newpassword },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
       res.status(200).send({
         status: "success",
+        message: "password changed successfully",
       });
     } catch (err) {
       console.log(err);
@@ -197,5 +197,71 @@ exports.change_password = (id) => {
         message: "An error occured while trying to change password",
       });
     }
-  };
-};
+  }
+}
+
+exports.forgot_password = () => {
+  return async (req, res, next) => {
+    try {
+
+      if (!req.body.email) {
+        return res.status(400).send({
+          status: "error",
+          message: "email is required",
+        });
+      }
+
+      const user = await usermodel.findOne({
+        email: req.body.email,
+      });
+
+      if (!user) {
+        return res.status(400).send({
+          status: "error",
+          message: "invalid email",
+        });
+      }
+
+      const token = jwt.sign({ id: user.id }, env.config.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      try {
+        resetPasswordModel.deleteMany({
+          email: user.email,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+
+      await resetPasswordModel.create({
+        email: user.email,
+        token,
+        expires: new Date(Date.now() + 3600000),
+      });
+
+      const reseturl = `http://localhost:3000/resetpassword/${token}`;
+
+      // send email
+
+      sendEmail(
+        user.email,
+        "Password reset",
+        `click <a href=${reseturl}>here</a> to reset your password`,
+        `click <a href=${reseturl}>here</a> to reset your password`
+      );
+
+      res.status(200).send({
+        status: "success",
+        message: "reset link sent to email",
+      });
+    }
+    catch (err) {
+      console.log(err);
+      res.status(500).send({
+        status: "error",
+        message: "An error occured while trying to reset password",
+      });
+    }
+  }
+}
