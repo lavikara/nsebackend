@@ -11,6 +11,6 @@ router.get("/get-members/:id", [authorization(), isuser()], user.get_members());
 router.put("/update-member/:id", validator(joischema.updateMember), [authorization(), isuser()], user.update_member());
 router.delete("/delete-member/:id", [authorization(), isuser()], user.delete_member());
 router.post("/change-password", validator(joischema.changePassword), user.change_password());
-router.post("/reset-password", user.forgot_password());
+router.post("/send-reset-token", user.send_reset_token());
 
 module.exports = router;

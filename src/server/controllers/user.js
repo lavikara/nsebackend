@@ -200,7 +200,7 @@ exports.change_password = () => {
   }
 }
 
-exports.forgot_password = () => {
+exports.send_reset_token = () => {
   return async (req, res, next) => {
     try {
 
