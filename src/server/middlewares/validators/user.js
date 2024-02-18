@@ -53,6 +53,10 @@ const changePassword = joi.object({
   token: joi.string().trim().required(),
 });
 
+const payment = joi.object({
+  amount: joi.number().required(),
+});
+
 exports.addMember = UserModel;
 exports.updateMember = update;
 exports.changePassword = changePassword;

@@ -18,7 +18,7 @@ app.use(logger);
 app.use(cors());
 
 app.get("/", (req, res) => {
-  res.send("NSE BACKEND API");
+  res.send("<h1> NSE BACKEND API </h1>");
 });
 app.use("/user", userRouter);
 

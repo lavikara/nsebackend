@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const env = require("../config/env.js");
 const usermodel = require("../../db/models/userModel.js");
 const resetPasswordModel = require("../../db/models/reset_password.js");
-const SendEmail = require("../utils/mail.js");
 const sendEmail = require("../utils/mail.js");
 
 exports.add_member = () => {
