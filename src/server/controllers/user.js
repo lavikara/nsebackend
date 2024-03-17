@@ -210,6 +210,13 @@ exports.send_reset_token = () => {
         });
       }
 
+      if (!req.body.siteUrl) {
+        return res.status(400).send({
+          status: "error",
+          message: "siteUrl is required",
+        });
+      }
+
       const user = await usermodel.findOne({
         email: req.body.email,
       });
@@ -226,9 +233,7 @@ exports.send_reset_token = () => {
       });
 
       try {
-        resetPasswordModel.deleteMany({
-          email: user.email,
-        });
+        await resetPasswordModel.deleteMany({ email: user.email });
       } catch (err) {
         console.log(err);
       }
@@ -239,8 +244,10 @@ exports.send_reset_token = () => {
         expires: new Date(Date.now() + 3600000),
       });
 
-      const reseturl = `http://localhost:3000/resetpassword/${token}`;
+      console.log(req.body)
 
+      const reseturl = `${req.body.siteUrl}/${token}`;
+      console.log(reseturl);
       // send email
 
       sendEmail(
