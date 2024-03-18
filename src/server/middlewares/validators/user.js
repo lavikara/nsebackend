@@ -49,8 +49,12 @@ const update = joi.object({
 });
 
 const changePassword = joi.object({
-  old_password: joi.string().min(6).trim().required(),
-  new_password: joi.string().min(6).trim().required(),
+  password: joi.string().min(6).trim().required(),
+  token: joi.string().trim().required(),
+});
+
+const payment = joi.object({
+  amount: joi.number().required(),
 });
 
 exports.addMember = UserModel;

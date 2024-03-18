@@ -17,6 +17,9 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(logger);
 app.use(cors());
 
+app.get("/", (req, res) => {
+  res.send("<h1> NSE BACKEND API </h1>");
+});
 app.use("/user", userRouter);
 
 app.listen(env.config.PORT, (err) => {
