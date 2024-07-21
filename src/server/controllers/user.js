@@ -75,7 +75,7 @@ exports.login_user = () => {
       delete userobj._id;
 
       const token = jwt.sign({ id: userobj.id }, env.config.JWT_SECRET, {
-        expiresIn: "8760h",
+        expiresIn: "1h",
       });
       res.status(200).send({
         status: "success",
