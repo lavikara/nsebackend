@@ -1,13 +1,11 @@
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-dotenv.config();
-const env = require("../config/env.js");
 const payment = require("../../db/models/payment.js");
 const User = require("../../db/models/userModel.js");
 const axios = require('axios');
+const env = require("../config/env.js");
 
 // Require paystack library
-const paystack = require("paystack-api")('sk_test_a64a4a9d9ae98c4d63e3c06c8343c0244ffab3d6');
+const paystack = require("paystack-api")(env.config.PAYSTACK_SECRET);
 
 // initialize transaction
 const add_payment = () => {
