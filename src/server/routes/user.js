@@ -14,6 +14,7 @@ router.delete("/delete-member/:id", [authorization(), isuser()], user.delete_mem
 router.post("/change-password", validator(joischema.changePassword), user.change_password());
 router.post("/send-reset-token", user.send_reset_token());
 router.post("/create-payment", [authorization()], payment.add_payment(), validator(joischema.payment));
-router.get("/payment-done", payment.payment_done());
+router.get("/verify-payment/:ref", payment.payment_done());
+router.get("/payment-history/:id", [authorization()], payment.get_history());
 
 module.exports = router;

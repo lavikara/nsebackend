@@ -8,14 +8,25 @@ const PaymentSchema = new mongoose.Schema({
     amount: {
         type: Number,
         required: true,
+    }, 
+    ref : {
+        type: String,
+        required: true,
     },
     payment_date: {
         type: Date,
         default: Date.now,
     },
-    payment_status: {
+    status: {
         type: String,
         default: "pending",
+    },
+});
+PaymentSchema.set("toJSON", {
+    transform: function (doc, ret, options) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
     },
 });
 

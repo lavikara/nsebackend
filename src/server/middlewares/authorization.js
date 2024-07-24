@@ -14,7 +14,14 @@ exports.authorization = () => {
     try {
       const token = authHeader.split(" ")[1];
       const payload = jwt.verify(token, env.config.JWT_SECRET);
+      if (payload.exp < Date.now() / 1000) {
+        return res.status(401).send({
+          status: "error",
+          message: "Token expired",
+        });
+      }
       req.user = payload;
+      
       next();
     } catch (err) {
       res.status(401).send({
