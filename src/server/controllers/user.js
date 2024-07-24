@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const env = require("../config/env.js");
 const usermodel = require("../../db/models/userModel.js");
+const pro_details = require("../../db/models/pro_details.js");
 const resetPasswordModel = require("../../db/models/reset_password.js");
 const sendEmail = require("../utils/mail.js");
 
@@ -10,6 +11,9 @@ exports.add_member = () => {
     try {
       req.body.password = await bcrypt.hash(req.body.password, 10);
       const user = await usermodel.create(req.body);
+      const pro = await pro_details.create({
+        user: user._id,
+      });
 
       const userobj = user.toJSON();
       delete userobj.password;
@@ -70,9 +74,6 @@ exports.login_user = () => {
       }
 
       const userobj = user.toJSON();
-      userobj["_id"] = userobj["id"];
-      delete userobj.password;
-      delete userobj._id;
 
       const token = jwt.sign({ id: userobj.id }, env.config.JWT_SECRET, {
         expiresIn: "1h",
@@ -113,9 +114,21 @@ exports.get_members = (id) => {
 exports.update_member = (id) => {
   return async (req, res, next) => {
     try {
+      let data = req.body;
+      let loggedUser = await usermodel.findById(req.user.id);
+      if (loggedUser.role !== "superAdmin") {
+        delete data.role;
+        delete data.email;
+        delete data.password;
+        delete data.last_name;
+        delete data.first_name;
+        delete data.other_names;
+        delete data.dob;
+      }
+      console.log(loggedUser);
       const user = await usermodel.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        data,
         {
           new: true,
           runValidators: true,
@@ -148,6 +161,63 @@ exports.delete_member = (id) => {
       res.status(500).send({
         status: "error",
         message: "An error occured while trying to delete user",
+      });
+    }
+  }
+}
+
+exports.get_pro_details = (id) => {
+  return async (req, res, next) => {
+    try {
+      const pro = await pro_details.findOne({ user: req.params.id });
+      res.status(200).send({
+        status: "success",
+        data: { pro },
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({
+        status: "error",
+        message: "An error occured while trying to get pro details",
+      });
+    }
+  }
+}
+
+exports.update_pro_details = (id) => {
+  return async (req, res, next) => {
+    try {
+      let loggedUser = await usermodel.findById(req.user.id);
+      if (loggedUser.role !== "superAdmin") {
+        delete req.body.user;
+        delete req.body.membership_status;
+        delete req.body.finicial_status;
+        delete req.body.membership_grade;
+        delete req.body.membership_branch;
+        delete req.body.membership_division;
+        // delete req.body.specialization;
+        delete req.body.coren_number;
+        delete req.body.coren_engineering_category;
+        // delete req.body.coren_registration_date;
+        delete req.body.registration_number;
+      }
+      const pro = await pro_details.findOneAndUpdate(
+        { user: req.params.id },
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      res.status(200).send({
+        status: "success",
+        data: { pro },
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({
+        status: "error",
+        message: "An error occured while trying to update pro details",
       });
     }
   }

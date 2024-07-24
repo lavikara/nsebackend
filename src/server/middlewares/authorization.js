@@ -43,7 +43,7 @@ exports.isuser = () => {
         });
       }
       loggedUser = await usermodel.findById(req.user.id);
-      if (user.id !== req.user.id && loggedUser.role !== "superAdmin") {
+      if (user.id !== req.user.id && loggedUser.role !== "superAdmin" && req.method !== "GET") {
         return res.status(401).send({
           status: "error",
           message: "You're not authorized to perform this action",

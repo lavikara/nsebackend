@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 /* mongoose user schema */
 
 const userschema = new mongoose.Schema({
+  title: {
+    type: String,
+    default: ""
+  },
   first_name: {
     type: String,
     // required: true,
@@ -11,6 +15,10 @@ const userschema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  other_names: {
+    type: String,
+    default: ""
+  },
   email: {
     type: String,
     required: true,
@@ -18,6 +26,7 @@ const userschema = new mongoose.Schema({
   },
   address: {
     type: Object,
+    default: ""
     // required: true,
   },
   phone_number: {
@@ -34,12 +43,44 @@ const userschema = new mongoose.Schema({
     type: Date,
     // required: true,
   },
-  payment_details: {
-    type: Object,
+  dob: {
+    type: Date,
+    default: null,
+  },
+  sex: {
+    type: String,
+    default: null
+  },
+  marital_status: {
+    type: String,
+    enum: ['single', 'married', 'divorced', 'widowed', null],
+    nullable: true,
+    default: null
+  },
+  country: {
+    type: String,
+    default: ""
+  },
+  state: {
+    type: String,
+    default: ""
+  },
+  lga: {
+    type: String,
+    default: ""
+  },
+  town: {
+    type: String,
+    default: ""
+  },
+  religion: {
+    type: String,
+    default: ""
   },
   role: {
     type: String,
     enum: ["admin", "superAdmin", "member"],
+    default: "member",
   },
 });
 
@@ -48,6 +89,7 @@ userschema.set("toJSON", {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;
+    delete ret.password;
   },
 });
 
